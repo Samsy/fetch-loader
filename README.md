@@ -8,10 +8,11 @@ var fetchLoader = require('fetch-loader')
 
 this.files = []
 
-this.files.push( { name: 'videoxsd', url : ROOTPATH + IMAGE_PATH + 'videoxsd.mp4' } )
+this.files.push( { name: 'videoxsd', url : ROOTPATH + VIDEO_PATH + 'videoxsd.mp4' } )
 this.files.push( { name: 'image',    url : ROOTPATH + IMAGE_PATH + 'image.jpg' } )
-this.files.push( { name: 'sound', url : ROOTPATH + IMAGE_PATH + 'sound.mp3' } )
+this.files.push( { name: 'sound', url : ROOTPATH + SOUND_PATH + 'sound.mp3' } )
 
+var fetchLoaderManager = new fetchLoader()
 
 fetchLoaderManager.load(this.files, { parallel: 8 })
 
