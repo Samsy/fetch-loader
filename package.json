@@ -1,0 +1,27 @@
+{
+  "name": "fetch-loader",
+  "version": "1.0.02",
+  "description": "An incredibly simple fetch asset loader",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Samsy/fetch-loader.git"
+  },
+  "keywords": [
+    "fetch",
+    "loader",
+    "asset"
+  ],
+  "author": "samsy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Samsy/fetch-loader/issues"
+  },
+  "homepage": "https://github.com/Samsy/fetch-loader#readme",
+  "dependencies": {
+    "whatwg-fetch": "^0.11.0"
+  }
+}
