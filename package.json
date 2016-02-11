@@ -1,6 +1,10 @@
 {
   "name": "fetch-loader",
+<<<<<<< HEAD
   "version": "1.0.3",
+=======
+  "version": "1.0.02",
+>>>>>>> 6029dbc383fd394a2a24b5a14c1ca484df4d6124
   "description": "An incredibly simple fetch asset loader",
   "main": "index.js",
   "scripts": {
@@ -15,9 +19,13 @@
     "loader",
     "asset"
   ],
+<<<<<<< HEAD
   "author": {
     "name": "samsy"
   },
+=======
+  "author": "samsy",
+>>>>>>> 6029dbc383fd394a2a24b5a14c1ca484df4d6124
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Samsy/fetch-loader/issues"
@@ -25,6 +33,7 @@
   "homepage": "https://github.com/Samsy/fetch-loader#readme",
   "dependencies": {
     "whatwg-fetch": "^0.11.0"
+<<<<<<< HEAD
   },
   "readme": "# fetch-loader\nAn incredibly very simple fetch assets loader that load every file as a blob\nand return a media element ( image / video / sound )\n\n\n```js\nvar fetchLoader = require('FetchLoader')\n\nthis.files = []\n\nthis.files.push( { name: 'videoxsd', url : ROOTPATH + IMAGE_PATH + 'videoxsd.mp4' } )\nthis.files.push( { name: 'image',    url : ROOTPATH + IMAGE_PATH + 'image.jpg' } )\nthis.files.push( { name: 'sound', url : ROOTPATH + IMAGE_PATH + 'sound.mp3' } )\n\n\nfetchLoaderManager.load(this.files, { parallel: 8 })\n\n// file event fire everytime a file is loaded\nfetchLoaderManager.on('file', onFile)\n\n// complete event fire when everything is loaded\nfetchLoaderManager.on('complete', onComplete)\n\n```\n",
   "readmeFilename": "README.md",
@@ -32,4 +41,7 @@
   "_id": "fetch-loader@1.0.2",
   "_shasum": "e58783acbbb9a9dcf304f68185d60161ce1cc3fc",
   "_from": "fetch-loader@>=1.0.2 <2.0.0"
+=======
+  }
+>>>>>>> 6029dbc383fd394a2a24b5a14c1ca484df4d6124
 }
