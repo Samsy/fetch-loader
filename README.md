@@ -1,6 +1,7 @@
 # fetch-loader 
 
-# npm install --save fetch-loader
+npm install --save fetch-loader
+----------
 
 An incredibly very simple fetch assets loader that load every file as a blob
 and return a media element ( image / video / sound )
