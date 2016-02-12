@@ -1,11 +1,10 @@
 require('whatwg-fetch')
 
-
 function FetchLoader() {
 
 	this.buffer = []
 
-	this.res = []
+	this.res = {}
 
 	this.totalWeight = 0
 
@@ -84,21 +83,31 @@ function FetchLoader() {
 
 		fetchdata.data = this.buffer[this.currentLoadingIndex]
 
-		fetchdata.then( 
+		fetchdata.then(
+
+			function(response) {
+
+				if (response.headers.get('Content-Type') == 'application/json' ) {
+
+					return response.json()
+
+				}
+
+				else {
+
+					return response.blob()
+
+				}
+			}
+
+		).then(
 
 			(function(response){
 
-					response.blob().then(  
+				this.onLoadedFile(response, fetchdata.data)
 
-						(function(response){
-
-							this.onLoadedFile(response, fetchdata.data)
-
-						}).bind(this)
-					)
-
-				}).bind(this)
-			)
+			}).bind(this)
+		)
 
 		.catch( function(error) {
 
@@ -110,29 +119,41 @@ function FetchLoader() {
 
 	this.onLoadedFile = function(blob, data) {  
 
+		var mediatype;
 
+		if ( blob.type ) {
 
-		var mediatype = blob.type.slice(0, blob.type.indexOf("/"))
+			mediatype = blob.type.slice(0, blob.type.indexOf("/"))
 
-		if (mediatype == 'video' ) {
+			if (mediatype == 'video' ) {
 
-			this.file = document.createElement( 'video' )
-			
+				this.file = document.createElement( 'video' )
+
+			}
+
+			if (mediatype == 'audio' ) {
+
+				this.file = new Audio()
+
+			}
+
+			if (mediatype == 'image' ) {
+
+				this.file = new Image()
+				
+			}
+
+			this.file.src = window.URL.createObjectURL(blob)
+
 		}
 
-		if (mediatype == 'audio' ) {
+		else {
 
-			this.file = new Audio()
-			
+			mediatype = 'json'
+
+			this.file =  blob; 
+
 		}
-
-		if (mediatype == 'image' ) {
-
-			this.file = new Image()
-			
-		}
-
-		this.file.src =  window.URL.createObjectURL(blob)
 
 		this.loadedWeight += data.weight
 
@@ -146,7 +167,7 @@ function FetchLoader() {
 
 		}
 
-		this.res.push(  { name: res.name, content: res })
+		this.res[res.name] = res
 
 		this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
@@ -224,11 +245,20 @@ function FetchLoader() {
 
 	}
 
-	this.emit = function(name, data) {  
+	this.off = function(name) {  
 
-		this.mapEvent[name](data)
+		delete this.mapEvent[name]; 
+
 	}
 
+	this.emit = function(name, data) { 
+
+		if (this.mapEvent[name] ) {
+
+			this.mapEvent[name](data)
+
+		} 
+	}
 }
 
 module.exports = FetchLoader;
