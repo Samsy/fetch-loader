@@ -2,26 +2,9 @@ require('whatwg-fetch')
 
 function FetchLoader() {
 
-	this.buffer = []
-
-	this.res = {}
-
-	this.totalWeight = 0
-
-	this.loadedWeight = 0
-
-	this.loadedMetadata = 0
-
-	this.loadedFiles = 0
-
-	this.currentLoadingIndex = 0
-
-	this.currentLoadingFile = 0
-
 	this.mapEvent = {}
 
 	this.mapDatas = {}
-
 
 	this.load = function load(manifest, opts) { 
 
@@ -33,43 +16,59 @@ function FetchLoader() {
 
 		this.totalFiles = this.files.length
 
-		this.getHeaders()
+		this.reset()
+
+		this.getHeaders(0)
 	}
 
 
+	this.reset = function reset() {
 
-	this.getHeaders = function getHeaders() {
+		this.totalWeight = 0
 
-		var i = 0
-	
+		this.loadedWeight = 0
 
-		while(i < this.files.length ) {
+		this.loadedMetadata = 0
 
-			var fetchmeta = fetch(this.files[i].url, {
+		this.loadedFiles = 0
 
-			  method: "HEAD"
+		this.currentLoadingIndex = 0
 
-			})
+		this.currentLoadingFile = 0
 
-			this.mapDatas[this.files[i].url] = this.files[i]
+		this.buffer = []
 
-			fetchmeta.then( 
+		this.res = {}
+		
+	}
 
-				(function(response){
 
-					this.onLoadedMetadata(response, this.mapDatas[response.url])
+	this.getHeaders = function getHeaders(i) {
 
-				}).bind(this), 
+		var fetchmeta = fetch(this.files[i].url, {
 
-				(function(error){
-					
-					this.onErrorMetadata(error)
+		  method: "HEAD"
 
-				}).bind(this)
-			)
+		})
 
-			i++
-		}
+		var currentDataFile = this.files[i]
+
+		fetchmeta.then( 
+
+			(function(response){
+
+				return this.onLoadedMetadata(response, currentDataFile)
+
+			}).bind(this), 
+
+			(function(error){
+				
+				return this.onErrorMetadata(error)
+
+			}).bind(this)
+		)
+
+		i++
 
 	};
 
@@ -77,7 +76,7 @@ function FetchLoader() {
 
 		var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, {
 
-		  method: "GET",
+		  method: "GET"
 
 		})
 
@@ -104,16 +103,13 @@ function FetchLoader() {
 
 			(function(response){
 
+				console.log(response)
+
 				this.onLoadedFile(response, fetchdata.data)
 
 			}).bind(this)
 		)
 
-		.catch( function(error) {
-
-		  console.log('There has been a problem with your fetch operation: ' + error.message)
-
-		})
 	}
 
 
@@ -184,6 +180,8 @@ function FetchLoader() {
 
 			this.emit('complete', this.res )
 
+
+
 		}
 
 		else {
@@ -196,10 +194,12 @@ function FetchLoader() {
 
 	this.onLoadedMetadata = function(response, data) {  
 
-		this.totalWeight += parseInt( response.headers.get("Content-Length") )
+		var size = parseInt( response.headers.get("Content-Length") )
 
-		data.weight = parseInt( response.headers.get("Content-Length") )
+		data.weight = size > 0 ? size : Math.random() * 100000  
 
+		this.totalWeight += data.weight
+ 
 		this.buffer.push(data)
 
 		this.loadedMetadata++
@@ -207,6 +207,11 @@ function FetchLoader() {
 		if( this.totalFiles === this.loadedMetadata ) {
 
 			this.nextIndexQueue()
+		}
+
+		else {
+
+			this.getHeaders(this.loadedMetadata)
 		}
 
 	}
@@ -255,8 +260,15 @@ function FetchLoader() {
 
 		if (this.mapEvent[name] ) {
 
-			this.mapEvent[name](data)
+			var ev = this.mapEvent[name]
 
+			// trick to abandon the promise scope
+
+			setTimeout( function() {
+
+				ev(data)
+
+			},0)
 		} 
 	}
 }
