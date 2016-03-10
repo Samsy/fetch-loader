@@ -19,17 +19,20 @@ this.files.push( { name: 'myjson', url : ROOTPATH + JSON_PATH + 'data.json' } )
 
 var fetchLoaderManager = new fetchLoader()
 
-fetchLoaderManager.load(this.files, { parallel: 8 })
-
 // file event fire everytime a file is loaded
 fetchLoaderManager.on('file', onFile)
 
 // complete event fire when everything is loaded
 fetchLoaderManager.on('complete', onComplete)
 
+
+fetchLoaderManager.load(this.files, { parallel: 8 })
+
+
 // kill events
 fetchLoaderManager.off('file')
 
 fetchLoaderManager.off('complete')
+
 
 ```
