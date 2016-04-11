@@ -26,7 +26,12 @@ fetchLoaderManager.on('file', onFile)
 fetchLoaderManager.on('complete', onComplete)
 
 
-fetchLoaderManager.load(this.files, { parallel: 8 })
+// fetchLoaderManager.load options : 
+
+// parallel : limit of the unsync fetch loading
+// headreq  : determine if the loader first process a head request ( true progression values ) 
+
+fetchLoaderManager.load(this.files, { parallel: 8, headreq: true })
 
 
 // kill events

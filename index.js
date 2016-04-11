@@ -14,11 +14,13 @@ function FetchLoader() {
 
 		this.parallel = this.opts.parallel || 5 
 
+		this.headreq = this.opts.headreq || false
+
 		this.totalFiles = this.files.length
 
 		this.reset()
 
-		this.getHeaders(0)
+		this.handleFetchMode()
 	}
 
 
@@ -42,6 +44,30 @@ function FetchLoader() {
 		
 	}
 
+	this.handleFetchMode = function handleFetchMode(){
+
+		if ( this.headreq ) {
+
+			this.getHeaders(0)
+
+		}
+
+		else {
+
+			var i = 0
+
+			while (i < this.totalFiles ) {
+
+				this.prepareFile(this.files[i])
+
+				i++
+			}
+
+			this.nextIndexQueue()
+
+		}
+	}
+
 
 	this.getHeaders = function getHeaders(i) {
 
@@ -57,7 +83,7 @@ function FetchLoader() {
 
 			(function(response){
 
-				return this.onLoadedMetadata(response, currentDataFile)
+				return this.onLoadedMetaData(response, currentDataFile)
 
 			}).bind(this), 
 
@@ -102,8 +128,6 @@ function FetchLoader() {
 		).then(
 
 			(function(response){
-
-				console.log(response)
 
 				this.onLoadedFile(response, fetchdata.data)
 
@@ -192,9 +216,27 @@ function FetchLoader() {
 
 	}
 
-	this.onLoadedMetadata = function(response, data) {  
+	this.prepareFile = function(data) {
 
-		var size = parseInt( response.headers.get("Content-Length") )
+		data.weight = Math.random() * 100000  
+
+		this.totalWeight += data.weight
+ 
+		this.buffer.push(data)
+
+		this.loadedMetadata++
+
+	}
+
+	this.onLoadedMetaData = function(response, data) {  
+
+		var size = 0
+
+		if( response && response.headers) {
+
+			size = parseInt( response.headers.get("Content-Length") )
+
+		}
 
 		data.weight = size > 0 ? size : Math.random() * 100000  
 
