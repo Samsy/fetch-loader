@@ -183,7 +183,9 @@ function FetchLoader() {
 
 			type: mediatype,
 
-			content: this.file    			
+			content: this.file,
+
+			data: data.data   			
 
 		}
 

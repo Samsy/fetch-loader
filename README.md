@@ -12,8 +12,15 @@ var fetchLoader = require('fetch-loader')
 
 this.files = []
 
+//	{ 
+//		name: 'image',                               =>   name of the media 
+//		url : ROOTPATH + IMAGE_PATH + 'image.jpg',   =>   url of the media 
+//		data: {description: "red image"}             =>   additional data you want to be associated with the loaded media
+//	}
+
+
 this.files.push( { name: 'videoxsd', url : ROOTPATH + VIDEO_PATH + 'videoxsd.mp4' } )
-this.files.push( { name: 'image',    url : ROOTPATH + IMAGE_PATH + 'image.jpg' } )
+this.files.push( { name: 'image',    url : ROOTPATH + IMAGE_PATH + 'image.jpg', data: {description: "red image"} )
 this.files.push( { name: 'sound', url : ROOTPATH + SOUND_PATH + 'sound.mp3' } )
 this.files.push( { name: 'myjson', url : ROOTPATH + JSON_PATH + 'data.json' } )
 
