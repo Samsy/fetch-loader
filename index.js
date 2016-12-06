@@ -1,28 +1,10 @@
 require('whatwg-fetch')
 
-
 function FetchLoader() {
-
-	this.buffer = []
-
-	this.res = []
-
-	this.totalWeight = 0
-
-	this.loadedWeight = 0
-
-	this.loadedMetadata = 0
-
-	this.loadedFiles = 0
-
-	this.currentLoadingIndex = 0
-
-	this.currentLoadingFile = 0
 
 	this.mapEvent = {}
 
 	this.mapDatas = {}
-
 
 	this.load = function load(manifest, opts) { 
 
@@ -32,45 +14,87 @@ function FetchLoader() {
 
 		this.parallel = this.opts.parallel || 5 
 
+		this.headreq = this.opts.headreq || false
+
 		this.totalFiles = this.files.length
 
-		this.getHeaders()
+		this.reset()
+
+		this.handleFetchMode()
 	}
 
 
+	this.reset = function reset() {
 
-	this.getHeaders = function getHeaders() {
+		this.totalWeight = 0
 
-		var i = 0
-	
+		this.loadedWeight = 0
 
-		while(i < this.files.length ) {
+		this.loadedMetadata = 0
 
-			var fetchmeta = fetch(this.files[i].url, {
+		this.loadedFiles = 0
 
-			  method: "HEAD"
+		this.currentLoadingIndex = 0
 
-			})
+		this.currentLoadingFile = 0
 
-			this.mapDatas[this.files[i].url] = this.files[i]
+		this.buffer = []
 
-			fetchmeta.then( 
+		this.res = {}
+		
+	}
 
-				(function(response){
+	this.handleFetchMode = function handleFetchMode(){
 
-					this.onLoadedMetadata(response, this.mapDatas[response.url])
+		if ( this.headreq ) {
 
-				}).bind(this), 
+			this.getHeaders(0)
 
-				(function(error){
-					
-					this.onErrorMetadata(error)
-
-				}).bind(this)
-			)
-
-			i++
 		}
+
+		else {
+
+			var i = 0
+
+			while (i < this.totalFiles ) {
+
+				this.prepareFile(this.files[i])
+
+				i++
+			}
+
+			this.nextIndexQueue()
+
+		}
+	}
+
+
+	this.getHeaders = function getHeaders(i) {
+
+		var fetchmeta = fetch(this.files[i].url, {
+
+		  method: "HEAD"
+
+		})
+
+		var currentDataFile = this.files[i]
+
+		fetchmeta.then( 
+
+			(function(response){
+
+				return this.onLoadedMetaData(response, currentDataFile)
+
+			}).bind(this), 
+
+			(function(error){
+				
+				return this.onErrorMetadata(error)
+
+			}).bind(this)
+		)
+
+		i++
 
 	};
 
@@ -78,61 +102,77 @@ function FetchLoader() {
 
 		var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, {
 
-		  method: "GET",
+		  method: "GET"
 
 		})
 
 		fetchdata.data = this.buffer[this.currentLoadingIndex]
 
-		fetchdata.then( 
+		fetchdata.then(
+
+			function(response) {
+
+				if (response.headers.get('Content-Type') == 'application/json' ) {
+
+					return response.json()
+
+				}
+
+				else {
+
+					return response.blob()
+
+				}
+			}
+
+		).then(
 
 			(function(response){
 
-					response.blob().then(  
+				this.onLoadedFile(response, fetchdata.data)
 
-						(function(response){
+			}).bind(this)
+		)
 
-							this.onLoadedFile(response, fetchdata.data)
-
-						}).bind(this)
-					)
-
-				}).bind(this)
-			)
-
-		.catch( function(error) {
-
-		  console.log('There has been a problem with your fetch operation: ' + error.message)
-
-		})
 	}
 
 
 	this.onLoadedFile = function(blob, data) {  
 
-
-
 		var mediatype = blob.type.slice(0, blob.type.indexOf("/"))
 
-		if (mediatype == 'video' ) {
+		if ( mediatype == 'video' ||  mediatype == 'audio' ||  mediatype == 'audio' ) {
 
-			this.file = document.createElement( 'video' )
-			
+			if (mediatype == 'video' ) {
+
+				this.file = document.createElement( 'video' )
+
+			}
+
+			if (mediatype == 'audio' ) {
+
+				this.file = new Audio()
+
+			}
+
+			if (mediatype == 'image' ) {
+
+				this.file = new Image()
+				
+			}
+
+			this.file.src = window.URL.createObjectURL(blob)
+
 		}
 
-		if (mediatype == 'audio' ) {
+		else {
 
-			this.file = new Audio()
-			
+
+			mediatype = 'json'
+
+			this.file =  blob; 
+
 		}
-
-		if (mediatype == 'image' ) {
-
-			this.file = new Image()
-			
-		}
-
-		this.file.src =  window.URL.createObjectURL(blob)
 
 		this.loadedWeight += data.weight
 
@@ -142,11 +182,13 @@ function FetchLoader() {
 
 			type: mediatype,
 
-			content: this.file    			
+			content: this.file,
+
+			data: data.data   			
 
 		}
 
-		this.res.push(  { name: res.name, content: res })
+		this.res[res.name] = res
 
 		this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
@@ -163,6 +205,8 @@ function FetchLoader() {
 
 			this.emit('complete', this.res )
 
+
+
 		}
 
 		else {
@@ -173,12 +217,32 @@ function FetchLoader() {
 
 	}
 
-	this.onLoadedMetadata = function(response, data) {  
+	this.prepareFile = function(data) {
 
-		this.totalWeight += parseInt( response.headers.get("Content-Length") )
+		data.weight = Math.random() * 100000  
 
-		data.weight = parseInt( response.headers.get("Content-Length") )
+		this.totalWeight += data.weight
+ 
+		this.buffer.push(data)
 
+		this.loadedMetadata++
+
+	}
+
+	this.onLoadedMetaData = function(response, data) {  
+
+		var size = 0
+
+		if( response && response.headers) {
+
+			size = parseInt( response.headers.get("Content-Length") )
+
+		}
+
+		data.weight = size > 0 ? size : Math.random() * 100000  
+
+		this.totalWeight += data.weight
+ 
 		this.buffer.push(data)
 
 		this.loadedMetadata++
@@ -186,6 +250,11 @@ function FetchLoader() {
 		if( this.totalFiles === this.loadedMetadata ) {
 
 			this.nextIndexQueue()
+		}
+
+		else {
+
+			this.getHeaders(this.loadedMetadata)
 		}
 
 	}
@@ -224,11 +293,27 @@ function FetchLoader() {
 
 	}
 
-	this.emit = function(name, data) {  
+	this.off = function(name) {  
 
-		this.mapEvent[name](data)
+		delete this.mapEvent[name]; 
+
 	}
 
+	this.emit = function(name, data) { 
+
+		if (this.mapEvent[name] ) {
+
+			var ev = this.mapEvent[name]
+
+			// trick to abandon the promise scope
+
+			setTimeout( function() {
+
+				ev(data)
+
+			},0)
+		} 
+	}
 }
 
 module.exports = FetchLoader;
