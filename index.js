@@ -217,6 +217,7 @@ function FetchLoader() {
 
 	}
 
+
 	this.prepareFile = function(data) {
 
 		data.weight = Math.random() * 100000  
