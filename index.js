@@ -183,7 +183,7 @@ function FetchLoader() {
 
 			content: this.file,
 
-			data: data.data
+			data: data.data,
 
 			source: this.file.src		
 
