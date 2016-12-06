@@ -1,10 +1,7 @@
 {
   "name": "fetch-loader",
-<<<<<<< HEAD
-  "version": "1.0.35",
-=======
   "version": "1.0.39",
->>>>>>> 4b12a462a1d7feaed5bb2d49a18ea9e0fe08d36a
+
   "description": "An incredibly simple fetch asset loader",
   "main": "index.js",
   "scripts": {

@@ -139,7 +139,7 @@ function FetchLoader() {
 
 	this.onLoadedFile = function(blob, data) {  
 
-		var mediatype = blob.type.slice(0, blob.type.indexOf("/"))
+		var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
 
 		if ( mediatype == 'video' ||  mediatype == 'audio' ||  mediatype == 'audio' ) {
 
@@ -166,7 +166,6 @@ function FetchLoader() {
 		}
 
 		else {
-
 
 			mediatype = 'json'
 
@@ -216,7 +215,6 @@ function FetchLoader() {
 		}
 
 	}
-
 
 	this.prepareFile = function(data) {
 
