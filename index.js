@@ -141,7 +141,7 @@ function FetchLoader() {
 
 		var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
 
-		if ( mediatype == 'video' ||  mediatype == 'audio' ||  mediatype == 'audio' ) {
+		if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
 
 			if (mediatype == 'video' ) {
 
@@ -183,7 +183,9 @@ function FetchLoader() {
 
 			content: this.file,
 
-			data: data.data   			
+			data: data.data
+
+			source: this.file.src		
 
 		}
 
