@@ -138,8 +138,6 @@ function FetchLoader() {
 
 	this.onLoadedFile = function(blob, data) { 
 
-		console.log(blob, data)
-
 		try {
 
 			var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
