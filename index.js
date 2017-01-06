@@ -112,11 +112,17 @@ function FetchLoader() {
 
 			function(response) {
 
-				if (response.headers.get('Content-Type') == 'application/json' ) {
+				if (/json/.test(response.url)) { // Contains the accepted word
 
-					return response.json()
-
+				    return response.json() 
+				         
 				}
+
+				// if (response.headers.get('Content-Type') == 'application/json' ) {
+
+				// 	return response.json()
+
+				// }
 
 				else {
 
@@ -139,7 +145,15 @@ function FetchLoader() {
 
 	this.onLoadedFile = function(blob, data) {  
 
-		var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
+		try {
+
+			var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
+		}
+
+		catch(e) {
+
+			console.log(e)
+		}
 
 		if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
 
