@@ -114,7 +114,7 @@ function FetchLoader() {
 
 			function(response) {
 
-				if (response.headers.get('Content-Type') == 'application/json' ) {
+				if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
 
 					return response.json()
 
