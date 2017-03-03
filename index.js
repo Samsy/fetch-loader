@@ -167,6 +167,16 @@ function FetchLoader() {
 			if (mediatype == 'image' ) {
 
 				this.file = new Image()
+
+				var dataa = data
+
+				this.file.onload = (function(){
+
+					this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
+
+					this.onLoadFile(data)
+
+				}).bind(this)
 				
 			}
 
@@ -205,12 +215,19 @@ function FetchLoader() {
 
 		this.res[res.name] = res
 
-		this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
+		// only if this is not an image
+		// otherwise wait for the image to load first		
 
-		this.onLoadFile(data)
+		if(mediatype != 'image'){
+
+			this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
+
+			this.onLoadFile(data)
+		}
+		
 	}
 
-	this.onLoadFile = function(blob, data) {  
+	this.onLoadFile = function(blob) {  
 
 		this.currentLoadingFile--
 
@@ -219,8 +236,6 @@ function FetchLoader() {
 		if ( this.loadedFiles == this.totalFiles ) {
 
 			this.emit('complete', this.res )
-
-
 
 		}
 
