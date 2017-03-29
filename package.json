@@ -1,6 +1,6 @@
 {
   "name": "fetch-loader",
-  "version": "1.0.48",
+  "version": "1.0.49",
   "description": "An incredibly simple fetch asset loader",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/Samsy/fetch-loader#readme",
   "dependencies": {
-    "whatwg-fetch": "^0.11.0"
+    "whatwg-fetch": "*"
   },
   "readmeFilename": "README.md",
   "gitHead": "6029dbc383fd394a2a24b5a14c1ca484df4d6124",

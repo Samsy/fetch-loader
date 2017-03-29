@@ -2,8 +2,6 @@ require('whatwg-fetch')
 
 function FetchLoader() {
 
-	this.reader = new FileReader();
-
 	this.mapEvent = {}
 
 	this.mapDatas = {}
