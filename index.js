@@ -16,6 +16,8 @@ function FetchLoader() {
 
 		this.headreq = this.opts.headreq || false
 
+		this.headers = this.opts.headers
+
 		this.totalFiles = this.files.length
 
 		this.reset()
@@ -71,11 +73,16 @@ function FetchLoader() {
 
 	this.getHeaders = function getHeaders(i) {
 
-		var fetchmeta = fetch(this.files[i].url, {
+		var options = {}
 
-		  method: "HEAD"
+		options.method = 'HEAD'
 
-		})
+		if(this.headers){
+
+			options.headers = this.headers
+		}
+
+		var fetchmeta = fetch(this.files[i].url, options )
 
 		var currentDataFile = this.files[i]
 
@@ -100,11 +107,16 @@ function FetchLoader() {
 
 	this.loadQueue = function() { 
 
-		var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, {
+		var options = {}
 
-		  method: "GET"
+		options.method = 'GET'
 
-		})
+		if(this.headers){
+
+			options.headers = this.headers
+		}
+
+		var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, options)
 
 		fetchdata.data = this.buffer[this.currentLoadingIndex]
 
