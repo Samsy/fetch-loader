@@ -18,6 +18,8 @@ function FetchLoader() {
 
 		this.headers = this.opts.headers
 
+		this.credentials = this.opts.credentials
+
 		this.totalFiles = this.files.length
 
 		this.reset()
@@ -80,6 +82,11 @@ function FetchLoader() {
 		if(this.headers){
 
 			options.headers = this.headers
+		}
+
+		if(this.credentials){
+
+			options.credentials = this.credentials
 		}
 
 		var fetchmeta = fetch(this.files[i].url, options )
