@@ -123,6 +123,11 @@ function FetchLoader() {
 			options.headers = this.headers
 		}
 
+		if(this.credentials){
+
+			options.credentials = this.credentials
+		}
+		
 		var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, options)
 
 		fetchdata.data = this.buffer[this.currentLoadingIndex]
