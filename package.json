@@ -1,6 +1,6 @@
 {
   "name": "fetch-loader",
-  "version": "1.0.54",
+  "version": "1.0.55",
   "description": "An incredibly simple fetch asset loader",
   "main": "index.js",
   "scripts": {

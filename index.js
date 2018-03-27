@@ -2,139 +2,139 @@ require('whatwg-fetch')
 
 function FetchLoader() {
 
-    this.mapEvent = {}
+  this.mapEvent = {}
 
-    this.mapDatas = {}
+  this.mapDatas = {}
 
-    this.load = function load(manifest, opts) {
+  this.load = function load(manifest, opts) {
 
-        this.files = manifest
+    this.files = manifest
 
-        this.opts = opts || {}
+    this.opts = opts || {}
 
-        this.parallel = this.opts.parallel || 5
+    this.parallel = this.opts.parallel || 5
 
-        this.headreq = this.opts.headreq || false
+    this.headreq = this.opts.headreq || false
 
     this.accept = this.opts.accept
 
-        this.headers = this.opts.headers
+    this.headers = this.opts.headers
 
-        this.credentials = this.opts.credentials
+    this.credentials = this.opts.credentials
 
-        this.totalFiles = this.files.length
+    this.totalFiles = this.files.length
 
-        this.reset()
+    this.reset()
 
-        this.handleFetchMode()
+    this.handleFetchMode()
+  }
+
+
+  this.reset = function reset() {
+
+    this.totalWeight = 0
+
+    this.loadedWeight = 0
+
+    this.loadedMetadata = 0
+
+    this.loadedFiles = 0
+
+    this.currentLoadingIndex = 0
+
+    this.currentLoadingFile = 0
+
+    this.buffer = []
+
+    this.res = {}
+
+  }
+
+  this.handleFetchMode = function handleFetchMode(){
+
+    if ( this.headreq ) {
+
+      this.getHeaders(0)
+
     }
 
+    else {
 
-    this.reset = function reset() {
+      var i = 0
 
-        this.totalWeight = 0
+      while (i < this.totalFiles ) {
 
-        this.loadedWeight = 0
+        this.prepareFile(this.files[i])
 
-        this.loadedMetadata = 0
+        i++
+      }
 
-        this.loadedFiles = 0
-
-        this.currentLoadingIndex = 0
-
-        this.currentLoadingFile = 0
-
-        this.buffer = []
-
-        this.res = {}
+      this.nextIndexQueue()
 
     }
+  }
 
-    this.handleFetchMode = function handleFetchMode(){
 
-        if ( this.headreq ) {
+  this.getHeaders = function getHeaders(i) {
 
-            this.getHeaders(0)
+    var options = {}
 
-        }
+    options.method = 'HEAD'
 
-        else {
+    if(this.headers){
 
-            var i = 0
-
-            while (i < this.totalFiles ) {
-
-                this.prepareFile(this.files[i])
-
-                i++
-            }
-
-            this.nextIndexQueue()
-
-        }
+      options.headers = this.headers
     }
 
+    if(this.credentials){
 
-    this.getHeaders = function getHeaders(i) {
-
-        var options = {}
-
-        options.method = 'HEAD'
-
-        if(this.headers){
-
-            options.headers = this.headers
-        }
-
-        if(this.credentials){
-
-            options.credentials = this.credentials
-        }
+      options.credentials = this.credentials
+    }
 
     var fetchmeta = fetch(this.files[i].url, options )
 
-        var currentDataFile = this.files[i]
+    var currentDataFile = this.files[i]
 
-        fetchmeta.then(
+    fetchmeta.then(
 
-            (function(response){
+      (function(response){
 
-                return this.onLoadedMetaData(response, currentDataFile)
+        return this.onLoadedMetaData(response, currentDataFile)
 
-            }).bind(this),
+      }).bind(this),
 
-            (function(error){
+      (function(error){
 
-                return this.onError(error)
+        return this.onError(error)
 
-            }).bind(this)
-        )
+      }).bind(this)
+    )
 
-        i++
+    i++
 
-    };
+  };
 
-    this.loadQueue = function() {
+  this.loadQueue = function() {
 
-        var options = {}
+    var options = {}
 
-        options.method = 'GET'
+    options.method = 'GET'
 
-        if(this.headers){
+    if(this.headers){
 
-            options.headers = this.headers
-        }
+      options.headers = this.headers
+    }
 
-        if(this.credentials){
+    if(this.credentials){
 
-            options.credentials = this.credentials
-        }
+      options.credentials = this.credentials
+    }
 
     var data = this.buffer[this.currentLoadingIndex]
 
-        var fetchData = fetch(this.buffer[this.currentLoadingIndex].url, options).then(
+    var fetchData = fetch(this.buffer[this.currentLoadingIndex].url, options).then(
 
-            (function(response) {
+      (function(response) {
 
         if(response.status == 404){
 
@@ -142,11 +142,11 @@ function FetchLoader() {
 
         }
 
-                if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
+        if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
 
-                    return response.json()
+          return response.json()
 
-                }
+        }
 
         if(response.headers.get('Content-Type') == 'application/octet-stream' ){
 
@@ -154,252 +154,252 @@ function FetchLoader() {
 
         }
 
-                else{
+        else{
 
-                    return response.blob()
-                }
-            }).bind(this)
+          return response.blob()
+        }
+      }).bind(this)
 
-        ).then(
+    ).then(
 
-            (function(response){
+      (function(response){
 
-                this.onLoadedFile(response, data)
+        this.onLoadedFile(response, data)
 
-            }).bind(this)
-        ).catch( (e)=>{
+      }).bind(this)
+    ).catch( function(e) {
         this.onError(e.statusText)
     })
 
+  }
+
+
+  this.onLoadedFile = function(blob, data) {
+
+    try {
+
+      var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
     }
 
-
-    this.onLoadedFile = function(blob, data) {
-
-        try {
-
-            var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
-        }
-
-        catch(e) {
+    catch(e) {
 
 
-        }
+    }
 
-        if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
+    if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
 
-            if (mediatype == 'video' ) {
+      if (mediatype == 'video' ) {
 
-                this.file = document.createElement( 'video' )
+        this.file = document.createElement( 'video' )
 
-            }
+      }
 
-            if (mediatype == 'audio' ) {
+      if (mediatype == 'audio' ) {
 
-                this.file = new Audio()
+        this.file = new Audio()
 
-            }
+      }
 
-            if (mediatype == 'image' ) {
+      if (mediatype == 'image' ) {
 
-                this.file = new Image()
+        this.file = new Image()
 
-                var dataa = data
+        var dataa = data
 
-                this.file.onload = (function(){
+        this.file.onload = (function(){
 
-                    this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
+          this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
-                    this.onLoadFile(data)
+          this.onLoadFile(data)
 
-                }).bind(this)
+        }).bind(this)
 
-            }
+      }
 
-            this.file.src = window.URL.createObjectURL(blob)
+      this.file.src = window.URL.createObjectURL(blob)
 
-        }
+    }
 
     else if(blob instanceof ArrayBuffer){
 
       this.file = blob;
     }
-        else if(blob.type == 'application/octet-stream'){
+    else if(blob.type == 'application/octet-stream'){
 
-            this.file = blob;
-
-        }
-
-        else {
-
-            mediatype = 'json'
-
-            this.file =  blob;
-
-        }
-
-        this.loadedWeight += data.weight
-
-        var res = {
-
-            name: data.name,
-
-            type: mediatype,
-
-            content: this.file,
-
-            data: data.data,
-
-            source: this.file.src
-
-        }
-
-        this.res[res.name] = res
-
-        if(mediatype != 'image'){
-
-            this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
-
-            this.onLoadFile()
-        }
+      this.file = blob;
 
     }
 
-    this.onLoadFile = function() {
+    else {
 
-        this.currentLoadingFile--
+      mediatype = 'json'
 
-        this.loadedFiles++
-
-        if ( this.loadedFiles == this.totalFiles ) {
-
-            this.emit('complete', this.res )
-
-        }
-
-        else {
-
-            this.nextIndexQueue()
-
-        }
+      this.file =  blob;
 
     }
 
-    this.prepareFile = function(data) {
+    this.loadedWeight += data.weight
 
-        data.weight = Math.random() * 100000
+    var res = {
 
-        this.totalWeight += data.weight
+      name: data.name,
 
-        this.buffer.push(data)
+      type: mediatype,
 
-        this.loadedMetadata++
+      content: this.file,
 
-    }
+      data: data.data,
 
-    this.onLoadedMetaData = function(response, data) {
-
-        var size = 0
-
-        if( response && response.headers) {
-
-            size = parseInt( response.headers.get("Content-Length") )
-
-        }
-
-        data.weight = size > 0 ? size : Math.random() * 100000
-
-        this.totalWeight += data.weight
-
-        this.buffer.push(data)
-
-        this.loadedMetadata++
-
-        if( this.totalFiles === this.loadedMetadata ) {
-
-            this.nextIndexQueue()
-        }
-
-        else {
-
-            this.getHeaders(this.loadedMetadata)
-        }
+      source: this.file.src
 
     }
 
-    this.nextIndexQueue = function() {
+    this.res[res.name] = res
 
-        if( this.currentLoadingFile <= this.parallel && this.currentLoadingIndex < this.totalFiles) {
+    if(mediatype != 'image'){
 
-            this.currentLoadingFile++
+      this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
-            this.loadQueue()
+      this.onLoadFile()
+    }
 
-            this.currentLoadingIndex++
+  }
 
-            this.nextIndexQueue()
-        }
+  this.onLoadFile = function() {
+
+    this.currentLoadingFile--
+
+    this.loadedFiles++
+
+    if ( this.loadedFiles == this.totalFiles ) {
+
+      this.emit('complete', this.res )
 
     }
 
-    this.onError = function(error) {
+    else {
 
-        this.onLoadFile()
-
-        this.emit('error', error)
+      this.nextIndexQueue()
 
     }
 
-    this.onErrorFile = function(error) {
+  }
 
-        console.log(error)
+  this.prepareFile = function(data) {
+
+    data.weight = Math.random() * 100000
+
+    this.totalWeight += data.weight
+
+    this.buffer.push(data)
+
+    this.loadedMetadata++
+
+  }
+
+  this.onLoadedMetaData = function(response, data) {
+
+    var size = 0
+
+    if( response && response.headers) {
+
+      size = parseInt( response.headers.get("Content-Length") )
 
     }
 
-    this.on = function(name, callback) {
+    data.weight = size > 0 ? size : Math.random() * 100000
 
-        this.mapEvent[name] = callback
+    this.totalWeight += data.weight
 
+    this.buffer.push(data)
+
+    this.loadedMetadata++
+
+    if( this.totalFiles === this.loadedMetadata ) {
+
+      this.nextIndexQueue()
     }
 
-    this.off = function(name) {
+    else {
 
-        delete this.mapEvent[name];
-
+      this.getHeaders(this.loadedMetadata)
     }
 
-    this.emit = function(name, data) {
+  }
 
-        if (this.mapEvent[name] ) {
+  this.nextIndexQueue = function() {
 
-            var ev = this.mapEvent[name]
+    if( this.currentLoadingFile <= this.parallel && this.currentLoadingIndex < this.totalFiles) {
 
-            // trick to abandon the promise scope
+      this.currentLoadingFile++
 
-            setTimeout( function() {
+      this.loadQueue()
 
-                ev(data)
+      this.currentLoadingIndex++
 
-            },0)
-        }
+      this.nextIndexQueue()
     }
 
-    this.blobToString = function(b) {
+  }
 
-        var u, x;
+  this.onError = function(error) {
 
-        u = URL.createObjectURL(b);
+    this.onLoadFile()
 
-        x = new XMLHttpRequest();
+    this.emit('error', error)
 
-        x.open('GET', u, false); // although sync, you're not fetching over internet
+  }
 
-        x.send();
+  this.onErrorFile = function(error) {
 
-        URL.revokeObjectURL(u);
+    console.log(error)
 
-        return x.responseText;
+  }
+
+  this.on = function(name, callback) {
+
+    this.mapEvent[name] = callback
+
+  }
+
+  this.off = function(name) {
+
+    delete this.mapEvent[name];
+
+  }
+
+  this.emit = function(name, data) {
+
+    if (this.mapEvent[name] ) {
+
+      var ev = this.mapEvent[name]
+
+      // trick to abandon the promise scope
+
+      setTimeout( function() {
+
+        ev(data)
+
+      },0)
     }
+  }
+
+  this.blobToString = function(b) {
+
+      var u, x;
+
+      u = URL.createObjectURL(b);
+
+      x = new XMLHttpRequest();
+
+      x.open('GET', u, false); // although sync, you're not fetching over internet
+
+      x.send();
+
+      URL.revokeObjectURL(u);
+
+      return x.responseText;
+  }
 }
 
 module.exports = FetchLoader;
