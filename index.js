@@ -16,6 +16,8 @@ function FetchLoader() {
 
         this.headreq = this.opts.headreq || false
 
+    this.accept = this.opts.accept
+
         this.headers = this.opts.headers
 
         this.credentials = this.opts.credentials
@@ -48,17 +50,19 @@ function FetchLoader() {
 
     }
 
-    this.handleFetchMode = function handleFetchMode() {
+    this.handleFetchMode = function handleFetchMode(){
 
-        if (this.headreq) {
+        if ( this.headreq ) {
 
             this.getHeaders(0)
 
-        } else {
+        }
+
+        else {
 
             var i = 0
 
-            while (i < this.totalFiles) {
+            while (i < this.totalFiles ) {
 
                 this.prepareFile(this.files[i])
 
@@ -77,31 +81,31 @@ function FetchLoader() {
 
         options.method = 'HEAD'
 
-        if (this.headers) {
+        if(this.headers){
 
             options.headers = this.headers
         }
 
-        if (this.credentials) {
+        if(this.credentials){
 
             options.credentials = this.credentials
         }
 
-        var fetchmeta = fetch(this.files[i].url, options)
+    var fetchmeta = fetch(this.files[i].url, options )
 
         var currentDataFile = this.files[i]
 
         fetchmeta.then(
 
-            (function(response) {
+            (function(response){
 
                 return this.onLoadedMetaData(response, currentDataFile)
 
             }).bind(this),
 
-            (function(error) {
+            (function(error){
 
-                return this.onErrorMetadata(error)
+                return this.onError(error)
 
             }).bind(this)
         )
@@ -116,46 +120,56 @@ function FetchLoader() {
 
         options.method = 'GET'
 
-        if (this.headers) {
+        if(this.headers){
 
             options.headers = this.headers
         }
 
-        if (this.credentials) {
+        if(this.credentials){
 
             options.credentials = this.credentials
         }
 
-        var fetchdata = fetch(this.buffer[this.currentLoadingIndex].url, options)
+    var data = this.buffer[this.currentLoadingIndex]
 
-        fetchdata.data = this.buffer[this.currentLoadingIndex]
-
-        fetchdata.then(
-
-            function(response) {
-
-                if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url))) {
-
-                    return response.json()
-
-                } else if (response.headers.get('Content-Type') == 'application/octet-stream') {
-
-                    return response.arrayBuffer()
-
-                } else {
-
-                    return response.blob()
-                }
-            }
-
-        ).then(
+        var fetchData = fetch(this.buffer[this.currentLoadingIndex].url, options).then(
 
             (function(response) {
 
-                this.onLoadedFile(response, fetchdata.data)
+        if(response.status == 404){
+
+          throw response
+
+        }
+
+                if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
+
+                    return response.json()
+
+                }
+
+        if(response.headers.get('Content-Type') == 'application/octet-stream' ){
+
+          return response.arrayBuffer()
+
+        }
+
+                else{
+
+                    return response.blob()
+                }
+            }).bind(this)
+
+        ).then(
+
+            (function(response){
+
+                this.onLoadedFile(response, data)
 
             }).bind(this)
-        )
+        ).catch( (e)=>{
+        this.onError(e.statusText)
+    })
 
     }
 
@@ -164,38 +178,37 @@ function FetchLoader() {
 
         try {
 
-            var mediatype = blob.type.slice(0, blob.type.indexOf("/"));
-        } catch (e) {
+            var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
+        }
+
+        catch(e) {
 
 
         }
 
-        if (mediatype == 'video' || mediatype == 'image' || mediatype == 'audio') {
+        if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
 
-            if (mediatype == 'video') {
+            if (mediatype == 'video' ) {
 
-                this.file = document.createElement('video')
+                this.file = document.createElement( 'video' )
 
             }
 
-            if (mediatype == 'audio') {
+            if (mediatype == 'audio' ) {
 
                 this.file = new Audio()
 
             }
 
-            if (mediatype == 'image') {
+            if (mediatype == 'image' ) {
 
                 this.file = new Image()
 
                 var dataa = data
 
-                this.file.onload = (function() {
+                this.file.onload = (function(){
 
-                    this.emit('file', {
-                        progression: this.loadedWeight / this.totalWeight,
-                        file: res
-                    })
+                    this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
                     this.onLoadFile(data)
 
@@ -205,19 +218,23 @@ function FetchLoader() {
 
             this.file.src = window.URL.createObjectURL(blob)
 
-        } else if (blob instanceof ArrayBuffer) {
+        }
+
+    else if(blob instanceof ArrayBuffer){
+
+      this.file = blob;
+    }
+        else if(blob.type == 'application/octet-stream'){
 
             this.file = blob;
 
-        } else if (blob.type == 'application/octet-stream') {
+        }
 
-            this.file = blob;
-
-        } else {
+        else {
 
             mediatype = 'json'
 
-            this.file = blob;
+            this.file =  blob;
 
         }
 
@@ -239,36 +256,32 @@ function FetchLoader() {
 
         this.res[res.name] = res
 
-        // only if this is not an image
-        // otherwise wait for the image to load first
+        if(mediatype != 'image'){
 
-        if (mediatype != 'image') {
+            this.emit('file', { progression : this.loadedWeight / this.totalWeight, file: res })
 
-            this.emit('file', {
-                progression: this.loadedWeight / this.totalWeight,
-                file: res
-            })
-
-            this.onLoadFile(data)
+            this.onLoadFile()
         }
 
     }
 
-    this.onLoadFile = function(blob) {
+    this.onLoadFile = function() {
 
         this.currentLoadingFile--
 
-            this.loadedFiles++
+        this.loadedFiles++
 
-            if (this.loadedFiles == this.totalFiles) {
+        if ( this.loadedFiles == this.totalFiles ) {
 
-                this.emit('complete', this.res)
+            this.emit('complete', this.res )
 
-            } else {
+        }
 
-                this.nextIndexQueue()
+        else {
 
-            }
+            this.nextIndexQueue()
+
+        }
 
     }
 
@@ -288,9 +301,9 @@ function FetchLoader() {
 
         var size = 0
 
-        if (response && response.headers) {
+        if( response && response.headers) {
 
-            size = parseInt(response.headers.get("Content-Length"))
+            size = parseInt( response.headers.get("Content-Length") )
 
         }
 
@@ -302,36 +315,39 @@ function FetchLoader() {
 
         this.loadedMetadata++
 
-            if (this.totalFiles === this.loadedMetadata) {
+        if( this.totalFiles === this.loadedMetadata ) {
 
-                this.nextIndexQueue()
-            } else {
+            this.nextIndexQueue()
+        }
 
-                this.getHeaders(this.loadedMetadata)
-            }
+        else {
+
+            this.getHeaders(this.loadedMetadata)
+        }
 
     }
 
     this.nextIndexQueue = function() {
 
-        if (this.currentLoadingFile <= this.parallel && this.currentLoadingIndex < this.totalFiles) {
+        if( this.currentLoadingFile <= this.parallel && this.currentLoadingIndex < this.totalFiles) {
 
             this.currentLoadingFile++
 
-                this.loadQueue()
+            this.loadQueue()
 
             this.currentLoadingIndex++
 
-                this.nextIndexQueue()
+            this.nextIndexQueue()
         }
 
     }
 
-    this.onErrorMetadata = function(error) {
+    this.onError = function(error) {
 
-        this.totalFiles--
+        this.onLoadFile()
 
-            console.log(error)
+        this.emit('error', error)
+
     }
 
     this.onErrorFile = function(error) {
@@ -354,17 +370,17 @@ function FetchLoader() {
 
     this.emit = function(name, data) {
 
-        if (this.mapEvent[name]) {
+        if (this.mapEvent[name] ) {
 
             var ev = this.mapEvent[name]
 
             // trick to abandon the promise scope
 
-            setTimeout(function() {
+            setTimeout( function() {
 
                 ev(data)
 
-            }, 0)
+            },0)
         }
     }
 
