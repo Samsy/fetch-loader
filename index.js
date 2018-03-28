@@ -148,7 +148,7 @@ function FetchLoader() {
 
         }
 
-        if(response.headers.get('Content-Type') == 'application/octet-stream' ){
+        if(response.headers.get('Content-Type') == 'application/octet-stream' || response.headers.get('Content-Type') == 'binary/octet-stream'){
 
           return response.arrayBuffer()
 
