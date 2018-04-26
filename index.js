@@ -184,8 +184,6 @@ function FetchLoader() {
 
   this.onLoadedFile = function(blob, contenttype, data) {
 
-    console.log(blob.type, contenttype)
-
     try {
 
       var mediatype  = blob.type.slice(0, blob.type.indexOf("/")) ||  contenttype.slice(0, contenttype.indexOf("/"));
@@ -196,8 +194,6 @@ function FetchLoader() {
 
 
     }
-
-    console.log(mediatype)
 
     if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' || mediatype == 'image/png' || mediatype == 'image/jpg') {
 
