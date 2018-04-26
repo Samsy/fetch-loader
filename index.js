@@ -190,7 +190,7 @@ function FetchLoader() {
 
     }
 
-    if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' ) {
+    if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' || mediatype == 'image/png' || mediatype == 'image/jpg') {
 
       if (mediatype == 'video' ) {
 
