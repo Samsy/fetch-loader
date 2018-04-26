@@ -132,6 +132,8 @@ function FetchLoader() {
 
     var data = this.buffer[this.currentLoadingIndex]
 
+    var contenttype = null
+
     var fetchData = fetch(this.buffer[this.currentLoadingIndex].url, options).then(
 
       (function(response) {
@@ -141,6 +143,8 @@ function FetchLoader() {
           throw response
 
         }
+
+        contenttype = response.headers.get('Content-Type')
 
         if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
 
@@ -168,7 +172,7 @@ function FetchLoader() {
 
       (function(response){
 
-        this.onLoadedFile(response, data)
+        this.onLoadedFile(response, contenttype, data)
 
       }).bind(this)
     ).catch( function(e) {
@@ -178,17 +182,22 @@ function FetchLoader() {
   }
 
 
-  this.onLoadedFile = function(blob, data) {
+  this.onLoadedFile = function(blob, contenttype, data) {
+
+    console.log(blob.type, contenttype)
 
     try {
 
-      var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
+      var mediatype  = blob.type.slice(0, blob.type.indexOf("/")) ||  contenttype.slice(0, contenttype.indexOf("/"));
+      // var mediatype  = blob.type.slice(0, blob.type.indexOf("/"));
     }
 
     catch(e) {
 
 
     }
+
+    console.log(mediatype)
 
     if ( mediatype == 'video' ||  mediatype == 'image' ||  mediatype == 'audio' || mediatype == 'image/png' || mediatype == 'image/jpg') {
 
