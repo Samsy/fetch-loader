@@ -146,7 +146,7 @@ function FetchLoader() {
 
         contenttype = response.headers.get('Content-Type')
 
-        if (response.headers.get('Content-Type') == 'application/json' || (/json/.test(response.url)) ) {
+        if (response.headers.get('Content-Type') == 'application/json' || (/json/).test(contenttype) ) {
 
           return response.json()
 
